@@ -19,7 +19,7 @@ load_dotenv()
 google_api_key = os.getenv("GOOGLE_API_KEY")
 
 #os.environ["GOOGLE_API_KEY"] = "AIzaSyAlBYH03S1F583dVX-5ae8nyTmvIycdd0o"
-st.title("Chat with PDF!!")
+st.title("Chat with PDFII!!")
 
 # Load PDF
 loader = PyPDFLoader(r"PDFS\yolov9_paper.pdf")
