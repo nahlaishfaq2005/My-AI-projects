@@ -18,8 +18,48 @@ load_dotenv()
 # Get Google API key from environment variables
 google_api_key = os.getenv("GOOGLE_API_KEY")
 
-#os.environ["GOOGLE_API_KEY"] = "AIzaSyAlBYH03S1F583dVX-5ae8nyTmvIycdd0o"
-st.title("Chat with PDF!!")
+# Streamlit UI with colorful theme
+st.set_page_config(page_title="Gemini RAG App", page_icon="🤖")
+
+# Custom CSS for colorful theme
+st.markdown(
+    """
+    <style>
+    body {
+        background-color: #f0f8ff; /* Light background */
+        color: #333; /* Dark text */
+    }
+    .stApp {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .stTextInput>div>div>input {
+        border-radius: 20px;
+        padding: 10px 15px;
+        border: 2px solid #4682B4; /* Steel blue border */
+    }
+    .stButton>button {
+        background-color: #4682B4; /* Steel blue button */
+        color: white;
+        border-radius: 20px;
+        padding: 10px 20px;
+    }
+    .stTextArea>div>div>textarea {
+        border-radius: 10px;
+        padding: 10px 15px;
+        border: 2px solid #87CEEB; /* Light sky blue border */
+    }
+    .stMarkdown {
+        color: #2E8B57; /* Sea green text */
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+st.title("Gemini RAG Application")
 
 # Load PDF
 loader = PyPDFLoader(r"PDFS\yolov9_paper.pdf")
@@ -44,7 +84,6 @@ for chunk in chunks:
     docs.extend(text_splitter.split_documents([doc]))  # Split and add the result to docs list
 
 # Create vector store with embeddings and persist directory
-# Create vector store with embeddings and persist directory
 persist_directory = "chroma_db"  # Choose a directory for persistence
 if not os.path.exists(persist_directory):  # only create the vector store if it does not already exist.
     vectorstore = Chroma.from_documents(
@@ -55,13 +94,14 @@ if not os.path.exists(persist_directory):  # only create the vector store if it 
     vectorstore.persist()  # persist immediately after creation.
 else:
     vectorstore = Chroma(persist_directory=persist_directory, embedding_function=GoogleGenerativeAIEmbeddings(model="models/embedding-001"))
+
 retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 10})
 
 # Initialize LLM
 llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro", temperature=0, max_tokens=None, timeout=None)
 
 # Chat input
-query = st.chat_input("Say something:")
+query = st.chat_input("Enter your question:")
 
 system_prompt = (
     "You are an assistant for question-answering tasks. "
@@ -86,4 +126,4 @@ if query:
 
     response = rag_chain.invoke({"input": query})
 
-    st.write(response["answer"])
+    st.markdown(f"<p style='color: #2E8B57;'>{response['answer']}</p>", unsafe_allow_html=True)
